@@ -23,6 +23,7 @@ import javax.validation.Validator;
 
 import com.googlecode.flyway.core.Flyway;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.openjpa.persistence.PersistenceProviderImpl;
 import org.apache.tomcat.jdbc.pool.DataSource;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.ImportResource;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.jndi.JndiObjectFactoryBean;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
@@ -72,12 +74,22 @@ public class SpringConfiguration {
 
   @Bean
   public javax.sql.DataSource dataSource() {
-    DataSource dataSource = new DataSource();
-    dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
-    dataSource.setUrl(env.getProperty("jdbc.url"));
-    dataSource.setUsername(env.getProperty("jdbc.username"));
-    dataSource.setPassword(env.getProperty("jdbc.password"));
-    return dataSource;
+    String jndiName = env.getProperty("jdbc.jndiName");
+
+    if (StringUtils.isNotBlank(jndiName)) {
+        JndiObjectFactoryBean dataSourceFactory = new JndiObjectFactoryBean();
+        dataSourceFactory.setJndiName(jndiName);
+      dataSourceFactory.setResourceRef(false);
+      return (javax.sql.DataSource) dataSourceFactory.getObject();
+    }
+    else {
+	  DataSource dataSource = new DataSource();
+	  dataSource.setDriverClassName(env.getProperty("jdbc.driverClassName"));
+	  dataSource.setUrl(env.getProperty("jdbc.url"));
+	  dataSource.setUsername(env.getProperty("jdbc.username"));
+	  dataSource.setPassword(env.getProperty("jdbc.password"));
+	  return dataSource;
+    }
   }
 
   @Bean
