@@ -86,7 +86,8 @@ public class AbstractResource {
 
 
   protected String getUserId(HttpServletRequest request) {
-    return ((VerifyTokenResponse) request.getAttribute(AuthorizationServerFilter.VERIFY_TOKEN_RESPONSE)).getPrincipal().getName();
+    // Hack voor TU Delft: alle resources zijn van deze owner
+    return "tud" ;
   }
 
   public String generateRandom() {
